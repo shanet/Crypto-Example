@@ -57,6 +57,10 @@ public:
 
     int setAESKey(unsigned char *aesKey, size_t aesKeyLen);
 
+    int getAESIv(unsigned char **aesIv);
+
+    int setAESIv(unsigned char *aesIv, size_t aesIvLen);
+
 private:
     static EVP_PKEY *localKeypair;
     EVP_PKEY *remotePubKey;

@@ -274,11 +274,27 @@ int Crypto::getAESKey(unsigned char **aesKey) {
  
 int Crypto::setAESKey(unsigned char *aesKey, size_t aesKeyLen) {
     // Ensure the new key is the proper size
-    if((int)aesKeyLen != AES_KEYLEN) {
+    if((int)aesKeyLen != AES_KEYLEN/8) {
         return FAILURE;
     }
  
     strncpy((char*)this->aesKey, (const char*)aesKey, AES_KEYLEN/8);
+ 
+    return SUCCESS;
+}
+
+int Crypto::getAESIv(unsigned char **aesIV) {
+    *aesIV = this->aesIV;
+    return AES_KEYLEN/16;
+}
+ 
+int Crypto::setAESIv(unsigned char *aesIV, size_t aesIVLen) {
+    // Ensure the new IV is the proper size
+    if((int)aesIVLen != AES_KEYLEN/16) {
+        return FAILURE;
+    }
+ 
+    strncpy((char*)this->aesIV, (const char*)aesIV, AES_KEYLEN/16);
  
     return SUCCESS;
 }
@@ -340,7 +356,7 @@ int Crypto::init() {
         return FAILURE;
     }
  
-    if(!EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha1(), aesSalt, aesPass, AES_KEYLEN/8, AES_ROUNDS, aesKey, aesIV)) {
+    if(EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha1(), aesSalt, aesPass, AES_KEYLEN/8, AES_ROUNDS, aesKey, aesIV) == 0) {
         return FAILURE;
     }
  
