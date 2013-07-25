@@ -278,7 +278,7 @@ int Crypto::setAESKey(unsigned char *aesKey, size_t aesKeyLen) {
         return FAILURE;
     }
  
-    strncpy((char*)this->aesKey, (const char*)aesKey, AES_KEYLEN);
+    strncpy((char*)this->aesKey, (const char*)aesKey, AES_KEYLEN/8);
  
     return SUCCESS;
 }
