@@ -17,6 +17,8 @@
 
 #define PSUEDO_CLIENT
 
+//#define USE_PBKDF
+
 #define SUCCESS 0
 #define FAILURE -1
 

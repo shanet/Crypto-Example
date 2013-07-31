@@ -347,18 +347,31 @@ int Crypto::init() {
         return FAILURE;
     }
 
-    // Get some random data to use as the AES pass and salt
-    if(RAND_bytes(aesPass, AES_KEYLEN/8) == 0) {
-        return FAILURE;
-    }
+    // For the AES key we have the option of using a PBKDF (password-baswed key derivation formula)
+    // or just using straight random data for the key and IV. Depending on your use case, you will
+    // want to pick one or another.
+    #ifdef USE_PBKDF
+        // Get some random data to use as the AES pass and salt
+        if(RAND_bytes(aesPass, AES_KEYLEN/8) == 0) {
+            return FAILURE;
+        }
 
-    if(RAND_bytes(aesSalt, 8) == 0) {
-        return FAILURE;
-    }
- 
-    if(EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha1(), aesSalt, aesPass, AES_KEYLEN/8, AES_ROUNDS, aesKey, aesIV) == 0) {
-        return FAILURE;
-    }
+        if(RAND_bytes(aesSalt, 8) == 0) {
+            return FAILURE;
+        }
+     
+        if(EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha256(), aesSalt, aesPass, AES_KEYLEN/8, AES_ROUNDS, aesKey, aesIV) == 0) {
+            return FAILURE;
+        }
+    #else
+        if(RAND_bytes(aesKey, AES_KEYLEN/8) == 0) {
+            return FAILURE;
+        }
+
+        if(RAND_bytes(aesIV, AES_KEYLEN/6) == 0) {
+            return FAILURE;
+        }
+    #endif
  
     return SUCCESS;
 }
