@@ -43,7 +43,7 @@ public:
 
     int rsaDecrypt(unsigned char *encMsg, size_t encMsgLen, unsigned char *ek, size_t ekl, unsigned char *iv, size_t ivl, unsigned char **decMsg);
 
-    int aesDecrypt(unsigned char *encMsg, size_t encMsgLen, char **decMsg);
+    int aesDecrypt(unsigned char *encMsg, size_t encMsgLen, unsigned char **decMsg);
 
     int writeKeyToFile(FILE *fd, int key);
 

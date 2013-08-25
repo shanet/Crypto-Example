@@ -132,11 +132,11 @@ int Crypto::rsaDecrypt(unsigned char *encMsg, size_t encMsgLen, unsigned char *e
     return (int)decLen;
 }
  
-int Crypto::aesDecrypt(unsigned char *encMsg, size_t encMsgLen, char **decMsg) {
+int Crypto::aesDecrypt(unsigned char *encMsg, size_t encMsgLen, unsigned char **decMsg) {
     size_t decLen   = 0;
     size_t blockLen = 0;
  
-    *decMsg = (char*)malloc(encMsgLen);
+    *decMsg = (unsigned char*)malloc(encMsgLen);
     if(*decMsg == NULL) return FAILURE;
  
     if(!EVP_DecryptInit_ex(aesDecryptCtx, EVP_aes_256_cbc(), NULL, aesKey, aesIV)) {
@@ -368,7 +368,7 @@ int Crypto::init() {
             return FAILURE;
         }
 
-        if(RAND_bytes(aesIV, AES_KEYLEN/6) == 0) {
+        if(RAND_bytes(aesIV, AES_KEYLEN/8) == 0) {
             return FAILURE;
         }
     #endif

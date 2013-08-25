@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 
+#include "base64.h"
 #include "Crypto.h"
 
 //#define PRINT_KEYS
@@ -47,23 +48,26 @@ int main() {
             fprintf(stderr, "Encryption failed\n");
             return 1;
         }
-        printf("%d bytes encrypted\n", encMsgLen);
+
+        char* b64String = base64Encode(encMsg, encMsgLen);
+        printf("Encrypted message: %s\n", b64String);
 
         if((decMsgLen = crypto.rsaDecrypt(encMsg, (size_t)encMsgLen, ek, ekl, iv, ivl, (unsigned char**)&decMsg)) == -1) {
             fprintf(stderr, "Decryption failed\n");
             return 1;
         }
-        printf("%d bytes decrypted\n", decMsgLen);
         printf("Decrypted message: %s\n", decMsg);
 
         free(encMsg);
         free(decMsg);
         free(ek);
         free(iv);
-        encMsg = NULL;
-        decMsg = NULL;
-        ek     = NULL;
-        iv     = NULL;
+        free(b64String);
+        encMsg    = NULL;
+        decMsg    = NULL;
+        ek        = NULL;
+        iv        = NULL;
+        b64String = NULL;
 
         printf("Message to AES encrypt: ");
         fflush(stdout);
@@ -73,9 +77,12 @@ int main() {
             fprintf(stderr, "Encryption failed\n");
             return 1;
         }
-        printf("%d bytes encrypted\n", encMsgLen);
 
-        if((decMsgLen = crypto.aesDecrypt(encMsg, (size_t)encMsgLen, &decMsg)) == -1) {
+        b64String = base64Encode(encMsg, encMsgLen);
+        printf("Encrypted message: %s\n", b64String);
+
+
+        if((decMsgLen = crypto.aesDecrypt(encMsg, (size_t)encMsgLen, (unsigned char**)&decMsg)) == -1) {
             fprintf(stderr, "Decryption failed\n");
             return 1;
         }
@@ -84,8 +91,10 @@ int main() {
 
         free(encMsg);
         free(decMsg);
-        encMsg = NULL;
-        decMsg = NULL;
+        free(b64String);
+        encMsg    = NULL;
+        decMsg    = NULL;
+        b64String = NULL;
     }
 
     return 0;
