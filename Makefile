@@ -1,4 +1,6 @@
-all:
+all: text file
+
+text:
 	g++ -Wall -Wextra -ggdb -o crypto-example crypto-example.cpp base64.cpp Crypto.cpp -lcrypto
 
 file:

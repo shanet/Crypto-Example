@@ -48,6 +48,7 @@ int Crypto::rsaEncrypt(const unsigned char *msg, size_t msgLen, unsigned char **
  
     *ek = (unsigned char*)malloc(EVP_PKEY_size(remotePubKey));
     *iv = (unsigned char*)malloc(EVP_MAX_IV_LENGTH);
+    if(*ek == NULL || *iv == NULL) return FAILURE;
     *ivl = EVP_MAX_IV_LENGTH;
  
     *encMsg = (unsigned char*)malloc(msgLen + EVP_MAX_IV_LENGTH);

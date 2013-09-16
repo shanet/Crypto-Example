@@ -39,6 +39,10 @@ int main(int argc, char **argv) {
 
     // Append .enc to the filename
     char *encryptedFilename = (char*)malloc(strlen(filename) + 5);
+    if(encryptedFilename == NULL) {
+        fprintf(stderr, "Failed to allocate memory\n");
+        return 1;
+    }
     sprintf(encryptedFilename, "%s.enc", filename);
 
     #ifdef CONVERT_TO_BASE64
@@ -83,6 +87,10 @@ int main(int argc, char **argv) {
 
     // Append .dec to the filename
     char *decryptedFilename = (char*)malloc(strlen(filename) + 5);
+    if(decryptedFilename == NULL) {
+        fprintf(stderr, "Failed to allocate memory\n");
+        return 1;
+    }
     sprintf(decryptedFilename, "%s.dec", filename);
     
     // Write the decrypted file to its own file
@@ -128,6 +136,10 @@ int readFile(char *filename, unsigned char **file) {
 
     // Allocate space for the file
     *file = (unsigned char*)malloc(fileLength);
+    if(*file == NULL) {
+        fprintf(stderr, "Failed to allocate memory\n");
+        exit(1);
+    }
 
     // Read the file into the buffer
     size_t bytesRead = fread(*file, 1, fileLength, fd);

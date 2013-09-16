@@ -7,6 +7,10 @@ char* base64Encode(const unsigned char *message, const size_t length) {
 
     int encodedSize = 4*ceil((double)length/3);
     char *buffer = (char*)malloc(encodedSize+1);
+    if(buffer == NULL) {
+        fprintf(stderr, "Failed to allocate memory\n");
+        exit(1);
+    }
      
     stream = fmemopen(buffer, encodedSize+1, "w");
     b64 = BIO_new(BIO_f_base64());
@@ -27,6 +31,10 @@ int base64Decode(const char *b64message, unsigned char **buffer) {
     int decodeLen = calcDecodeLength(b64message);
 
     *buffer = (unsigned char*)malloc(decodeLen+1);
+    if(*buffer == NULL) {
+        fprintf(stderr, "Failed to allocate memory\n");
+        exit(1);
+    }
     FILE* stream = fmemopen((char*)b64message, strlen(b64message), "r");
      
     b64 = BIO_new(BIO_f_base64());
