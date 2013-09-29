@@ -5,7 +5,7 @@
 #include "base64.h"
 #include "Crypto.h"
 
-//#define PRINT_KEYS
+#define PRINT_KEYS
 
 using namespace std;
 
@@ -21,8 +21,8 @@ int main() {
         unsigned char *aesKey;
         size_t aesLength = crypto.getAESKey(&aesKey);
         printf("AES key: ");
-        for(int i=0; i<aesLength; i++) {
-            printf("%d", aesKey[i]);
+        for(unsigned int i=0; i<aesLength; i++) {
+            printf("%x", aesKey[i]);
         }
         printf("\n");
     #endif
