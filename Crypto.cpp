@@ -278,8 +278,8 @@ int Crypto::setAESKey(unsigned char *aesKey, size_t aesKeyLen) {
     if((int)aesKeyLen != AES_KEYLEN/8) {
         return FAILURE;
     }
- 
-    strncpy((char*)this->aesKey, (const char*)aesKey, AES_KEYLEN/8);
+
+    memcpy(this->aesKey, aesKey, AES_KEYLEN/8);
  
     return SUCCESS;
 }
@@ -294,8 +294,8 @@ int Crypto::setAESIv(unsigned char *aesIV, size_t aesIVLen) {
     if((int)aesIVLen != AES_KEYLEN/16) {
         return FAILURE;
     }
- 
-    strncpy((char*)this->aesIV, (const char*)aesIV, AES_KEYLEN/16);
+
+    memcpy(this->aesIV, aesIV, AES_KEYLEN/16);
  
     return SUCCESS;
 }
