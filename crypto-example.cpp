@@ -5,7 +5,7 @@
 #include "base64.h"
 #include "Crypto.h"
 
-#define PRINT_KEYS
+//#define PRINT_KEYS
 
 using namespace std;
 
@@ -13,11 +13,12 @@ int main() {
     Crypto crypto;
 
     #ifdef PRINT_KEYS
-        // Write the keys to stdout if compiled as such
+        // Write the RSA keys to stdout
         crypto.writeKeyToFile(stdout, KEY_SERVER_PRI);
         crypto.writeKeyToFile(stdout, KEY_SERVER_PUB);
         crypto.writeKeyToFile(stdout, KEY_CLIENT_PUB);
 
+        // Write the AES key to stdout in hex
         unsigned char *aesKey;
         size_t aesLength = crypto.getAESKey(&aesKey);
         printf("AES key: ");
