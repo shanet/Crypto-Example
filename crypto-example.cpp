@@ -46,6 +46,8 @@ int main() {
         getline(cin, msg);
 
         // Encrypt the message with RSA
+        // Note the +1 tacked on to the string length argument. We want to encrypt the NUL terminator too. If we don't,
+        // we would have to put it back after decryption, but it's easier to keep it with the string.
         if((encMsgLen = crypto.rsaEncrypt((const unsigned char*)msg.c_str(), msg.size()+1, &encMsg, &ek, &ekl, &iv, &ivl)) == -1) {
             fprintf(stderr, "Encryption failed\n");
             return 1;
