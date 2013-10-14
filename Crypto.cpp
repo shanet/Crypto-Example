@@ -125,9 +125,7 @@ int Crypto::rsaDecrypt(unsigned char *encMsg, size_t encMsgLen, unsigned char *e
         return FAILURE;
     }
     decLen += blockLen;
- 
-    (*decMsg)[decLen] = '\0';
- 
+  
     EVP_CIPHER_CTX_cleanup(rsaDecryptCtx);
  
     return (int)decLen;
@@ -154,11 +152,9 @@ int Crypto::aesDecrypt(unsigned char *encMsg, size_t encMsgLen, unsigned char **
     }
     decLen += blockLen;
  
-    (*decMsg)[decLen] = '\0';
- 
     EVP_CIPHER_CTX_cleanup(aesDecryptCtx);
  
-    return encMsgLen;
+    return (int)decLen;
 }
  
 int Crypto::writeKeyToFile(FILE *fd, int key) {

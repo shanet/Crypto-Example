@@ -5,7 +5,12 @@
 #include "base64.h"
 #include "Crypto.h"
 
+// Uncomment to write the encrypted file as base64
 //#define CONVERT_TO_BASE64
+
+// Note: This isn't a good way to encrypt large file (anything that can't be read into
+// memory in a single buffer). A better approach for this is to read in one block at a type,
+// encrypt it, write it to a file and so on.
 
 using namespace std;
 
@@ -27,6 +32,7 @@ int main(int argc, char **argv) {
     // Read the file to encrypt
     unsigned char *file;
     size_t fileLength = readFile(filename, &file);
+    printf("%d bytes to be encrypted\n", (int)fileLength);
 
     // Encrypt the file
     unsigned char *encryptedFile;
@@ -46,9 +52,8 @@ int main(int argc, char **argv) {
     sprintf(encryptedFilename, "%s.enc", filename);
 
     #ifdef CONVERT_TO_BASE64
-        // Encode to encrypted file to base64
-        char *base64Buffer;
-        base64Buffer = base64Encode(encryptedFile, encryptedFileLength);
+        // Encode the encrypted file to base64
+        char *base64Buffer = base64Encode(encryptedFile, encryptedFileLength);
 
         // Change the encrypted file pointer to the base64 string and update
         // the length (we can use strlen() now since the base64 string is ASCII data)
@@ -65,12 +70,11 @@ int main(int argc, char **argv) {
 
     // Read the encrypted file back
     fileLength = readFile(encryptedFilename, &file);
-    printf("read %d bytes\n", (int)fileLength);
 
     #ifdef CONVERT_TO_BASE64
         // Decode the encrypted file from base64
         unsigned char *binaryBuffer;
-        fileLength = base64Decode((char*)file, &binaryBuffer);
+        fileLength = base64Decode((char*)file, fileLength, &binaryBuffer);
 
         // Change the pointer of the string containing the file info to the decoded base64 string
         free(file);
@@ -84,6 +88,7 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Decryption failed\n");
         return 1;
     }
+    printf("%d bytes decrypted\n", (int)decryptedFileLength);
 
     // Append .dec to the filename
     char *decryptedFilename = (char*)malloc(strlen(filename) + 5);

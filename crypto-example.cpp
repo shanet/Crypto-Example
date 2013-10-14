@@ -46,7 +46,7 @@ int main() {
         getline(cin, msg);
 
         // Encrypt the message with RSA
-        if((encMsgLen = crypto.rsaEncrypt((const unsigned char*)msg.c_str(), msg.size(), &encMsg, &ek, &ekl, &iv, &ivl)) == -1) {
+        if((encMsgLen = crypto.rsaEncrypt((const unsigned char*)msg.c_str(), msg.size()+1, &encMsg, &ek, &ekl, &iv, &ivl)) == -1) {
             fprintf(stderr, "Encryption failed\n");
             return 1;
         }
@@ -80,7 +80,7 @@ int main() {
         getline(cin, msg);
 
         // Encrypt the message with AES
-        if((encMsgLen = crypto.aesEncrypt((const unsigned char*)msg.c_str(), msg.size(), &encMsg)) == -1) {
+        if((encMsgLen = crypto.aesEncrypt((const unsigned char*)msg.c_str(), msg.size()+1, &encMsg)) == -1) {
             fprintf(stderr, "Encryption failed\n");
             return 1;
         }
