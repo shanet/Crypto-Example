@@ -369,6 +369,9 @@ int Crypto::init() {
             return FAILURE;
         }
     #endif
+
+    free(aesPass);
+    free(aesSalt);
  
     return SUCCESS;
 }

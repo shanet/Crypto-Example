@@ -39,7 +39,7 @@ int main() {
     size_t ekl;
     size_t ivl;
 
-    while(1) {
+    while(!cin.eof()) {
         // Get the message to encrypt
         printf("Message to RSA encrypt: ");
         fflush(stdout);
