@@ -26,17 +26,11 @@ Crypto::Crypto(unsigned char *remotePubKey, size_t remotePubKeyLen) {
 Crypto::~Crypto() {
     EVP_PKEY_free(remotePubKey);
  
-    EVP_CIPHER_CTX_cleanup(rsaEncryptCtx);
-    EVP_CIPHER_CTX_cleanup(aesEncryptCtx);
+    EVP_CIPHER_CTX_free(rsaEncryptCtx);
+    EVP_CIPHER_CTX_free(aesEncryptCtx);
  
-    EVP_CIPHER_CTX_cleanup(rsaDecryptCtx);
-    EVP_CIPHER_CTX_cleanup(aesDecryptCtx);
- 
-    free(rsaEncryptCtx);
-    free(aesEncryptCtx);
- 
-    free(rsaDecryptCtx);
-    free(aesDecryptCtx);
+    EVP_CIPHER_CTX_free(rsaDecryptCtx);
+    EVP_CIPHER_CTX_free(aesDecryptCtx);
  
     free(aesKey);
     free(aesIV);
@@ -68,8 +62,6 @@ int Crypto::rsaEncrypt(const unsigned char *msg, size_t msgLen, unsigned char **
     }
     encMsgLen += blockLen;
  
-    EVP_CIPHER_CTX_cleanup(rsaEncryptCtx);
- 
     return (int)encMsgLen;
 }
  
@@ -92,8 +84,6 @@ int Crypto::aesEncrypt(const unsigned char *msg, size_t msgLen, unsigned char **
     if(!EVP_EncryptFinal_ex(aesEncryptCtx, *encMsg + encMsgLen, (int*)&blockLen)) {
         return FAILURE;
     }
- 
-    EVP_CIPHER_CTX_cleanup(aesEncryptCtx);
  
     return encMsgLen + blockLen;
 }
@@ -125,8 +115,6 @@ int Crypto::rsaDecrypt(unsigned char *encMsg, size_t encMsgLen, unsigned char *e
         return FAILURE;
     }
     decLen += blockLen;
-  
-    EVP_CIPHER_CTX_cleanup(rsaDecryptCtx);
  
     return (int)decLen;
 }
@@ -151,8 +139,6 @@ int Crypto::aesDecrypt(unsigned char *encMsg, size_t encMsgLen, unsigned char **
         return FAILURE;
     }
     decLen += blockLen;
- 
-    EVP_CIPHER_CTX_cleanup(aesDecryptCtx);
  
     return (int)decLen;
 }
@@ -217,8 +203,8 @@ int Crypto::setRemotePubKey(unsigned char* pubKey, size_t pubKeyLen) {
         return FAILURE;
     }
  
-    RSA *_pubKey = (RSA*)malloc(sizeof(RSA));
-    if(_pubKey == NULL) return FAILURE;
+    //RSA *_pubKey = (RSA*)malloc(sizeof(RSA));
+    //if(_pubKey == NULL) return FAILURE;
  
     PEM_read_bio_PUBKEY(bio, &remotePubKey, NULL, NULL);
  
@@ -298,23 +284,16 @@ int Crypto::setAESIv(unsigned char *aesIV, size_t aesIVLen) {
  
 int Crypto::init() {
     // Initalize contexts
-    rsaEncryptCtx = (EVP_CIPHER_CTX*)malloc(sizeof(EVP_CIPHER_CTX));
-    aesEncryptCtx = (EVP_CIPHER_CTX*)malloc(sizeof(EVP_CIPHER_CTX));
+    rsaEncryptCtx = EVP_CIPHER_CTX_new();
+    aesEncryptCtx = EVP_CIPHER_CTX_new();
  
-    rsaDecryptCtx = (EVP_CIPHER_CTX*)malloc(sizeof(EVP_CIPHER_CTX));
-    aesDecryptCtx = (EVP_CIPHER_CTX*)malloc(sizeof(EVP_CIPHER_CTX));
+    rsaDecryptCtx = EVP_CIPHER_CTX_new();
+    aesDecryptCtx = EVP_CIPHER_CTX_new();
  
     // Always a good idea to check if malloc failed
     if(rsaEncryptCtx == NULL || aesEncryptCtx == NULL || rsaDecryptCtx == NULL || aesDecryptCtx == NULL) {
         return FAILURE;
     }
- 
-    // Init these here to make valgrind happy
-    EVP_CIPHER_CTX_init(rsaEncryptCtx);
-    EVP_CIPHER_CTX_init(aesEncryptCtx);
- 
-    EVP_CIPHER_CTX_init(rsaDecryptCtx);
-    EVP_CIPHER_CTX_init(aesDecryptCtx);
  
     // Init RSA
     EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
