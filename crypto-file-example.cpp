@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
         encryptedFile = (unsigned char*)base64Buffer;
         encryptedFileLength = strlen((char*)encryptedFile);
     #endif
-    
+
     // Write the encrypted file to its own file
     writeFile(encryptedFilename, encryptedFile, encryptedFileLength);
     printf("Encrypted message written to \"%s\"\n", encryptedFilename);
@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
         return 1;
     }
     sprintf(decryptedFilename, "%s.dec", filename);
-    
+
     // Write the decrypted file to its own file
     writeFile(decryptedFilename, decryptedFile, decryptedFileLength);
     printf("Decrypted file written to \"%s\"\n", decryptedFilename);
