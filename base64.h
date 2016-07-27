@@ -1,4 +1,5 @@
 #ifndef BASE64_H
+#define BASE64_H
 
 #include <openssl/bio.h>
 #include <openssl/evp.h>
