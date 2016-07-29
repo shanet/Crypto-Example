@@ -7,7 +7,7 @@ A short, proof-of-concept RSA and AES encryption program with OpenSSL.
 
 Accompanying documentation and walk-through is available at: https://shanetully.com/2012/06/openssl-rsa-aes-and-c/
 
-### Usage
+## Usage
 
 You must have OpenSSL installed before building.
 
@@ -17,11 +17,11 @@ $ ./crypto_example
 $ ./crypto_file_example sample.txt
 ```
 
-### Problems?
+## Problems?
 
 Despite going long periods of time without being updated, this repo is actively maintained. Being an example that I don't check often, I rely on users for reports if something breaks. Issues and pull requests are greatly appreciated.
 
-### License
+## License
 
 The MIT License (MIT)
 
