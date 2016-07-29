@@ -5,7 +5,6 @@
 #include <openssl/rand.h>
 
 #include <stdio.h>
-#include <string>
 #include <string.h>
 
 #ifndef CRYPTO_H
@@ -15,7 +14,7 @@
 #define AES_KEYLEN 256
 #define AES_ROUNDS 6
 
-#define PSUEDO_CLIENT
+#define PSEUDO_CLIENT
 
 //#define USE_PBKDF
 
@@ -29,47 +28,50 @@
 #define KEY_AES_IV     4
 
 class Crypto {
+  public:
+    Crypto();
+    Crypto(unsigned char *remotePubKey, size_t remotePubKeyLen);
+    ~Crypto();
 
-public:
-  Crypto();
-  Crypto(unsigned char *remotePubKey, size_t remotePubKeyLen);
-  ~Crypto();
+    int rsaEncrypt(const unsigned char *message, size_t messageLength, unsigned char **encryptedMessage, unsigned char **encryptedKey,
+      size_t *encryptedKeyLength, unsigned char **iv, size_t *ivLength);
+    int rsaDecrypt(unsigned char *encryptedMessage, size_t encryptedMessageLength, unsigned char *encryptedKey, size_t encryptedKeyLength,
+      unsigned char *iv, size_t ivLength, unsigned char **decryptedMessage);
 
-  int rsaEncrypt(const unsigned char *msg, size_t msgLen, unsigned char **encMsg, unsigned char **ek, size_t *ekl, unsigned char **iv, size_t *ivl);
-  int aesEncrypt(const unsigned char *msg, size_t msgLen, unsigned char **encMsg);
+    int aesEncrypt(const unsigned char *message, size_t messageLength, unsigned char **encryptedMessage);
+    int aesDecrypt(unsigned char *encryptedMessage, size_t encryptedMessageLength, unsigned char **decryptedMessage);
 
-  int rsaDecrypt(unsigned char *encMsg, size_t encMsgLen, unsigned char *ek, size_t ekl, unsigned char *iv, size_t ivl, unsigned char **decMsg);
-  int aesDecrypt(unsigned char *encMsg, size_t encMsgLen, unsigned char **decMsg);
+    int getRemotePublicKey(unsigned char **publicKey);
+    int setRemotePublicKey(unsigned char *publicKey, size_t publicKeyLength);
 
-  int writeKeyToFile(FILE *fd, int key);
+    int getLocalPublicKey(unsigned char **publicKey);
+    int getLocalPrivateKey(unsigned char **privateKey);
 
-  int getRemotePubKey(unsigned char **pubKey);
-  int setRemotePubKey(unsigned char *pubKey, size_t pubKeyLen);
+    int getAesKey(unsigned char **aesKey);
+    int setAesKey(unsigned char *aesKey, size_t aesKeyLen);
 
-  int getLocalPubKey(unsigned char **pubKey);
-  int getLocalPriKey(unsigned char **priKey);
+    int getAesIv(unsigned char **aesIv);
+    int setAesIv(unsigned char *aesIv, size_t aesIvLen);
 
-  int getAESKey(unsigned char **aesKey);
-  int setAESKey(unsigned char *aesKey, size_t aesKeyLen);
+    int writeKeyToFile(FILE *file, int key);
 
-  int getAESIv(unsigned char **aesIv);
-  int setAESIv(unsigned char *aesIv, size_t aesIvLen);
+  private:
+    static EVP_PKEY *localKeypair;
+    EVP_PKEY *remotePublicKey;
 
-private:
-  static EVP_PKEY *localKeypair;
-  EVP_PKEY *remotePubKey;
+    EVP_CIPHER_CTX *rsaEncryptContext;
+    EVP_CIPHER_CTX *aesEncryptContext;
 
-  EVP_CIPHER_CTX *rsaEncryptCtx;
-  EVP_CIPHER_CTX *aesEncryptCtx;
+    EVP_CIPHER_CTX *rsaDecryptContext;
+    EVP_CIPHER_CTX *aesDecryptContext;
 
-  EVP_CIPHER_CTX *rsaDecryptCtx;
-  EVP_CIPHER_CTX *aesDecryptCtx;
+    unsigned char *aesKey;
+    unsigned char *aesIv;
 
-  unsigned char *aesKey;
-  unsigned char *aesIV;
-
-  int init();
-  int genTestClientKey();
+    int init();
+    int generateRsaKeypair(EVP_PKEY **keypair);
+    int generateAesKey(unsigned char **aesKey, unsigned char **aesIv);
+    int bioToString(BIO *bio, unsigned char **string);
 };
 
 #endif

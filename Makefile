@@ -1,11 +1,19 @@
+CC = g++
+CFLAGS = -Wall -Wextra -ggdb
+LIBS = -lcrypto
+SRC = base64.cpp Crypto.cpp
+
+EXAMPLE_TARGET = crypto_example
+FILE_EXAMPLE_TARGET = crypto_file_example
+
 all: text file
 
 text:
-	g++ -Wall -Wextra -ggdb -o crypto-example crypto-example.cpp base64.cpp Crypto.cpp -lcrypto
+	$(CC) $(CFLAGS) -o $(EXAMPLE_TARGET) $(SRC) crypto_example.cpp $(LIBS)
 
 file:
-	g++ -Wall -Wextra -ggdb -o crypto-file-example crypto-file-example.cpp base64.cpp Crypto.cpp -lcrypto
+	$(CC) $(CFLAGS) -o $(FILE_EXAMPLE_TARGET) $(SRC) crypto_file_example.cpp $(LIBS)
 
 clean:
-	rm -f crypto-example crypto-file-example
+	rm $(EXAMPLE_TARGET) $(FILE_EXAMPLE_TARGET)
 

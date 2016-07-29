@@ -2,6 +2,7 @@
 #define BASE64_H
 
 #include <openssl/bio.h>
+#include <openssl/buffer.h>
 #include <openssl/evp.h>
 
 #include <math.h>
