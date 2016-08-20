@@ -9,7 +9,7 @@ Accompanying documentation and walk-through is available at: https://shanetully.
 
 ## Usage
 
-You must have OpenSSL installed before building.
+You must have a recent version of OpenSSL installed before building.
 
 ```
 $ make
