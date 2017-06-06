@@ -1,4 +1,5 @@
 #include "Crypto.h"
+#include <openssl/applink.c>
 
 using namespace std;
 
