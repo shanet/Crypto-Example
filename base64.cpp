@@ -19,11 +19,11 @@ char* base64Encode(const unsigned char *message, const size_t length) {
 
   BUF_MEM *bufferPtr;
   BIO_get_mem_ptr(bio, &bufferPtr);
-  BIO_set_close(bio, BIO_NOCLOSE);
+  BIO_set_close(bio, BIO_CLOSE);
 
+  memcpy(b64text, (*bufferPtr).data, (*bufferPtr).length + 1);
+  
   BIO_free_all(bio);
-  b64text = (*bufferPtr).data;
-
   return b64text;
 }
 
