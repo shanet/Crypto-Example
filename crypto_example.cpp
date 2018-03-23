@@ -129,7 +129,16 @@ void printKeys(Crypto *crypto) {
 
   printf("AES key: ");
   for(unsigned int i=0; i<aesLength; i++) {
-    printf("%x", aesKey[i]);
+    printf("%02hhx", aesKey[i]);
+  }
+  printf("\n");
+
+  // Write the AES IV to stdout in hex
+  unsigned char *aesIv;
+  size_t ivLength = crypto->getAesIv(&aesIv);
+  printf("AES iv:  ");
+  for(unsigned int i=0; i<ivLength; i++) {
+    printf("%02hhx", aesIv[i]);
   }
   printf("\n");
 }

@@ -11,7 +11,6 @@
 #define CRYPTO_H
 
 #define RSA_KEYLEN 2048
-#define AES_KEYLEN 256
 #define AES_ROUNDS 6
 
 #define PSEUDO_CLIENT
@@ -58,6 +57,8 @@ class Crypto {
   private:
     static EVP_PKEY *localKeypair;
     EVP_PKEY *remotePublicKey;
+    size_t aesKeyLen;
+    size_t aesIvLen;
 
     EVP_CIPHER_CTX *rsaEncryptContext;
     EVP_CIPHER_CTX *aesEncryptContext;
