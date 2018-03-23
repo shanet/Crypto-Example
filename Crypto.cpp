@@ -49,6 +49,16 @@ int Crypto::init() {
     return FAILURE;
   }
 
+  /* Don't set key or IV right away; we want to set lengths */
+  EVP_CIPHER_CTX_init(aesEncryptContext);
+  EVP_CIPHER_CTX_init(aesDecryptContext);
+
+  EVP_CipherInit_ex(aesEncryptContext, EVP_aes_256_cbc(), NULL, NULL, NULL, 1);
+
+  /* Now we can set key and IV lengths */
+  aesKeyLength = EVP_CIPHER_CTX_key_length(aesEncryptContext);
+  aesIvLength = EVP_CIPHER_CTX_iv_length(aesEncryptContext);
+
   // Generate RSA and AES keys
   generateRsaKeypair(&localKeypair);
   generateAesKey(&aesKey, &aesIv);
@@ -77,8 +87,8 @@ int Crypto::generateRsaKeypair(EVP_PKEY **keypair) {
 }
 
 int Crypto::generateAesKey(unsigned char **aesKey, unsigned char **aesIv) {
-  *aesKey = (unsigned char*)malloc(AES_KEYLEN/8);
-  *aesIv = (unsigned char*)malloc(AES_KEYLEN/8);
+  *aesKey = (unsigned char*)malloc(aesKeyLength);
+  *aesIv = (unsigned char*)malloc(aesIvLength);
 
   if(aesKey == NULL || aesIv == NULL) {
     return FAILURE;
@@ -87,7 +97,7 @@ int Crypto::generateAesKey(unsigned char **aesKey, unsigned char **aesIv) {
   // For the AES key we have the option of using a PBKDF or just using straight random
   // data for the key and IV. Depending on your use case, you will want to pick one or another.
   #ifdef USE_PBKDF
-    unsigned char *aesPass = (unsigned char*)malloc(AES_KEYLEN/8);
+    unsigned char *aesPass = (unsigned char*)malloc(aesKeyLength);
     unsigned char *aesSalt = (unsigned char*)malloc(8);
 
     if(aesPass == NULL || aesSalt == NULL) {
@@ -95,7 +105,7 @@ int Crypto::generateAesKey(unsigned char **aesKey, unsigned char **aesIv) {
     }
 
     // Get some random data to use as the AES pass and salt
-    if(RAND_bytes(aesPass, AES_KEYLEN/8) == 0) {
+    if(RAND_bytes(aesPass, aesKeyLength) == 0) {
       return FAILURE;
     }
 
@@ -103,18 +113,18 @@ int Crypto::generateAesKey(unsigned char **aesKey, unsigned char **aesIv) {
       return FAILURE;
     }
 
-    if(EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha256(), aesSalt, aesPass, AES_KEYLEN/8, AES_ROUNDS, aesKey, aesIv) == 0) {
+    if(EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha256(), aesSalt, aesPass, aesKeyLength, AES_ROUNDS, aesKey, aesIv) == 0) {
       return FAILURE;
     }
 
     free(aesPass);
     free(aesSalt);
   #else
-    if(RAND_bytes(*aesKey, AES_KEYLEN/8) == 0) {
+    if(RAND_bytes(*aesKey, aesKeyLength) == 0) {
       return FAILURE;
     }
 
-    if(RAND_bytes(*aesIv, AES_KEYLEN/8) == 0) {
+    if(RAND_bytes(*aesIv, aesIvLength) == 0) {
       return FAILURE;
     }
   #endif
@@ -284,32 +294,32 @@ int Crypto::getLocalPrivateKey(unsigned char **privateKey) {
 
 int Crypto::getAesKey(unsigned char **aesKey) {
   *aesKey = this->aesKey;
-  return AES_KEYLEN/8;
+  return aesKeyLength;
 }
 
-int Crypto::setAesKey(unsigned char *aesKey, size_t aesKeyLength) {
+int Crypto::setAesKey(unsigned char *aesKey, size_t aesKeyLengthgth) {
   // Ensure the new key is the proper size
-  if((int)aesKeyLength != AES_KEYLEN/8) {
+  if(aesKeyLengthgth != aesKeyLength) {
     return FAILURE;
   }
 
-  memcpy(this->aesKey, aesKey, AES_KEYLEN/8);
+  memcpy(this->aesKey, aesKey, aesKeyLength);
 
   return SUCCESS;
 }
 
 int Crypto::getAesIv(unsigned char **aesIv) {
   *aesIv = this->aesIv;
-  return AES_KEYLEN/8;
+  return aesIvLength;
 }
 
-int Crypto::setAesIv(unsigned char *aesIv, size_t aesIvLength) {
+int Crypto::setAesIv(unsigned char *aesIv, size_t aesIvLengthgth) {
   // Ensure the new IV is the proper size
-  if((int)aesIvLength != AES_KEYLEN/8) {
+  if(aesIvLengthgth != aesIvLength) {
     return FAILURE;
   }
 
-  memcpy(this->aesIv, aesIv, AES_KEYLEN/8);
+  memcpy(this->aesIv, aesIv, aesIvLength);
 
   return SUCCESS;
 }
@@ -335,11 +345,11 @@ int Crypto::writeKeyToFile(FILE *file, int key) {
       break;
 
     case KEY_AES:
-      fwrite(aesKey, 1, AES_KEYLEN, file);
+      fwrite(aesKey, 1, aesKeyLength * 8, file);
       break;
 
     case KEY_AES_IV:
-      fwrite(aesIv, 1, AES_KEYLEN, file);
+      fwrite(aesIv, 1, aesIvLength * 8, file);
       break;
 
     default:

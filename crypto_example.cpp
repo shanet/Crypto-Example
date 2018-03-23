@@ -125,11 +125,21 @@ void printKeys(Crypto *crypto) {
 
   // Write the AES key to stdout in hex
   unsigned char *aesKey;
-  size_t aesLength = crypto->getAesKey(&aesKey);
+  size_t aesKeyLength = crypto->getAesKey(&aesKey);
+  printBytesAsHex(aesKey, aesKeyLength, "AES Key");
 
-  printf("AES key: ");
-  for(unsigned int i=0; i<aesLength; i++) {
-    printf("%x", aesKey[i]);
+  // Write the AES IV to stdout in hex
+  unsigned char *aesIv;
+  size_t aesIvLength = crypto->getAesIv(&aesIv);
+  printBytesAsHex(aesIv, aesIvLength, "AES IV");
+}
+
+void printBytesAsHex(unsigned char *bytes, size_t length, const char *message) {
+  printf("%s: ", message);
+
+  for(unsigned int i=0; i<length; i++) {
+    printf("%02hhx", bytes[i]);
   }
-  printf("\n");
+
+  puts("");
 }

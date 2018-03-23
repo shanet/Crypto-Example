@@ -11,7 +11,6 @@
 #define CRYPTO_H
 
 #define RSA_KEYLEN 2048
-#define AES_KEYLEN 256
 #define AES_ROUNDS 6
 
 #define PSEUDO_CLIENT
@@ -67,6 +66,9 @@ class Crypto {
 
     unsigned char *aesKey;
     unsigned char *aesIv;
+
+    size_t aesKeyLength;
+    size_t aesIvLength;
 
     int init();
     int generateRsaKeypair(EVP_PKEY **keypair);
