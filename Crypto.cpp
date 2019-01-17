@@ -113,7 +113,7 @@ int Crypto::generateAesKey(unsigned char **aesKey, unsigned char **aesIv) {
       return FAILURE;
     }
 
-    if(EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha256(), aesSalt, aesPass, aesKeyLength, AES_ROUNDS, aesKey, aesIv) == 0) {
+    if(EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha256(), aesSalt, aesPass, aesKeyLength, AES_ROUNDS, *aesKey, *aesIv) == 0) {
       return FAILURE;
     }
 
