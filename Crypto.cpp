@@ -90,7 +90,7 @@ int Crypto::generateAesKey(unsigned char **aesKey, unsigned char **aesIv) {
   *aesKey = (unsigned char*)malloc(aesKeyLength);
   *aesIv = (unsigned char*)malloc(aesIvLength);
 
-  if(aesKey == NULL || aesIv == NULL) {
+  if(*aesKey == NULL || *aesIv == NULL) {
     return FAILURE;
   }
 
