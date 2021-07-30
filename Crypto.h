@@ -33,7 +33,7 @@ class Crypto {
     ~Crypto();
 
     int rsaEncrypt(const unsigned char *message, size_t messageLength, unsigned char **encryptedMessage, unsigned char **encryptedKey,
-      size_t *encryptedKeyLength, unsigned char **iv, size_t *ivLength);
+      int *encryptedKeyLength, unsigned char **iv, int *ivLength);
     int rsaDecrypt(unsigned char *encryptedMessage, size_t encryptedMessageLength, unsigned char *encryptedKey, size_t encryptedKeyLength,
       unsigned char *iv, size_t ivLength, unsigned char **decryptedMessage);
 

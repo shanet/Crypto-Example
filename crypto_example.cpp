@@ -27,8 +27,8 @@ void encryptRsa(Crypto *crypto) {
   unsigned char *encryptedMessage = NULL;
   unsigned char *encryptedKey;
   unsigned char *iv;
-  size_t encryptedKeyLength;
-  size_t ivLength;
+  int encryptedKeyLength;
+  int ivLength;
 
   int encryptedMessageLength = crypto->rsaEncrypt((const unsigned char*)message.c_str(), message.size()+1,
     &encryptedMessage, &encryptedKey, &encryptedKeyLength, &iv, &ivLength);

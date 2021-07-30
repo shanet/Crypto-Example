@@ -1,12 +1,10 @@
 #include "Crypto.h"
 
-using namespace std;
-
 EVP_PKEY* Crypto::localKeypair;
 
 Crypto::Crypto() {
-  localKeypair = NULL;
-  remotePublicKey = NULL;
+  localKeypair = nullptr;
+  remotePublicKey = nullptr;
 
   #ifdef PSEUDO_CLIENT
     generateRsaKeypair(&remotePublicKey);
@@ -16,8 +14,8 @@ Crypto::Crypto() {
 }
 
 Crypto::Crypto(unsigned char *remotePublicKey, size_t remotePublicKeyLength) {
-  localKeypair = NULL;
-  this->remotePublicKey = NULL;
+  localKeypair = nullptr;
+  this->remotePublicKey = nullptr;
 
   setRemotePublicKey(remotePublicKey, remotePublicKeyLength);
   init();
@@ -45,7 +43,7 @@ int Crypto::init() {
   aesDecryptContext = EVP_CIPHER_CTX_new();
 
   // Check if any of the contexts initializations failed
-  if(rsaEncryptContext == NULL || aesEncryptContext == NULL || rsaDecryptContext == NULL || aesDecryptContext == NULL) {
+  if(rsaEncryptContext == nullptr || aesEncryptContext == nullptr || rsaDecryptContext == nullptr || aesDecryptContext == nullptr) {
     return FAILURE;
   }
 
@@ -53,7 +51,7 @@ int Crypto::init() {
   EVP_CIPHER_CTX_init(aesEncryptContext);
   EVP_CIPHER_CTX_init(aesDecryptContext);
 
-  EVP_CipherInit_ex(aesEncryptContext, EVP_aes_256_cbc(), NULL, NULL, NULL, 1);
+  EVP_CipherInit_ex(aesEncryptContext, EVP_aes_256_cbc(), nullptr, nullptr, nullptr, 1);
 
   /* Now we can set key and IV lengths */
   aesKeyLength = EVP_CIPHER_CTX_key_length(aesEncryptContext);
@@ -67,7 +65,7 @@ int Crypto::init() {
 }
 
 int Crypto::generateRsaKeypair(EVP_PKEY **keypair) {
-  EVP_PKEY_CTX *context = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
+  EVP_PKEY_CTX *context = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, nullptr);
 
   if(EVP_PKEY_keygen_init(context) <= 0) {
     return FAILURE;
@@ -87,38 +85,47 @@ int Crypto::generateRsaKeypair(EVP_PKEY **keypair) {
 }
 
 int Crypto::generateAesKey(unsigned char **aesKey, unsigned char **aesIv) {
-  *aesKey = (unsigned char*)malloc(aesKeyLength);
-  *aesIv = (unsigned char*)malloc(aesIvLength);
+  *aesKey = static_cast<unsigned char*>(std::malloc(aesKeyLength));
+  *aesIv = static_cast<unsigned char*>(std::malloc(aesIvLength));
 
-  if(aesKey == NULL || aesIv == NULL) {
+  if(*aesKey == nullptr || *aesIv == nullptr) {
     return FAILURE;
   }
 
   // For the AES key we have the option of using a PBKDF or just using straight random
   // data for the key and IV. Depending on your use case, you will want to pick one or another.
   #ifdef USE_PBKDF
-    unsigned char *aesPass = (unsigned char*)malloc(aesKeyLength);
-    unsigned char *aesSalt = (unsigned char*)malloc(8);
+    unsigned char *aesPass = static_cast<unsigned char*>(std::malloc(aesKeyLength));
+    unsigned char *aesSalt = static_cast<unsigned char*>(std::malloc(8));
 
-    if(aesPass == NULL || aesSalt == NULL) {
+    if((*aesPass == nullptr) || (*aesSalt == nullptr)) {
+      if (nullptr != *aesPass){
+        free(aesPass);
+      }
+      if (nullptr != *aesSalt){
+        free(aesSalt);
+      }
       return FAILURE;
     }
 
     // Get some random data to use as the AES pass and salt
     if(RAND_bytes(aesPass, aesKeyLength) == 0) {
+      free(aesSalt);
+      free(aesPass);
       return FAILURE;
     }
 
     if(RAND_bytes(aesSalt, 8) == 0) {
+      free(aesSalt);
+      free(aesPass);
       return FAILURE;
     }
 
     if(EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha256(), aesSalt, aesPass, aesKeyLength, AES_ROUNDS, aesKey, aesIv) == 0) {
+      free(aesSalt);
+      free(aesPass);
       return FAILURE;
     }
-
-    free(aesPass);
-    free(aesSalt);
   #else
     if(RAND_bytes(*aesKey, aesKeyLength) == 0) {
       return FAILURE;
@@ -133,41 +140,41 @@ int Crypto::generateAesKey(unsigned char **aesKey, unsigned char **aesIv) {
 }
 
 int Crypto::rsaEncrypt(const unsigned char *message, size_t messageLength, unsigned char **encryptedMessage, unsigned char **encryptedKey,
-  size_t *encryptedKeyLength, unsigned char **iv, size_t *ivLength) {
+  int *encryptedKeyLength, unsigned char **iv, int *ivLength) {
 
   // Allocate memory for everything
   size_t encryptedMessageLength = 0;
-  size_t blockLength = 0;
+  int blockLength = 0;
 
-  *encryptedKey = (unsigned char*)malloc(EVP_PKEY_size(remotePublicKey));
-  *iv = (unsigned char*)malloc(EVP_MAX_IV_LENGTH);
+  *encryptedKey = static_cast<unsigned char*>(std::malloc(EVP_PKEY_size(remotePublicKey)));
+  *iv = static_cast<unsigned char*>(std::malloc(EVP_MAX_IV_LENGTH));
   *ivLength = EVP_MAX_IV_LENGTH;
 
-  if(*encryptedKey == NULL || *iv == NULL) {
+  if(*encryptedKey == nullptr || *iv == nullptr) {
     return FAILURE;
   }
 
-  *encryptedMessage = (unsigned char*)malloc(messageLength + EVP_MAX_IV_LENGTH);
-  if(encryptedMessage == NULL) {
+  *encryptedMessage = static_cast<unsigned char*>(std::malloc(messageLength + EVP_MAX_IV_LENGTH));
+  if(*encryptedMessage == nullptr) {
     return FAILURE;
   }
 
   // Encrypt it!
-  if(!EVP_SealInit(rsaEncryptContext, EVP_aes_256_cbc(), encryptedKey, (int*)encryptedKeyLength, *iv, &remotePublicKey, 1)) {
+  if(!EVP_SealInit(rsaEncryptContext, EVP_aes_256_cbc(), encryptedKey, encryptedKeyLength, *iv, &remotePublicKey, 1)) {
     return FAILURE;
   }
 
-  if(!EVP_SealUpdate(rsaEncryptContext, *encryptedMessage + encryptedMessageLength, (int*)&blockLength, (const unsigned char*)message, (int)messageLength)) {
-    return FAILURE;
-  }
-  encryptedMessageLength += blockLength;
-
-  if(!EVP_SealFinal(rsaEncryptContext, *encryptedMessage + encryptedMessageLength, (int*)&blockLength)) {
+  if(!EVP_SealUpdate(rsaEncryptContext, *encryptedMessage + encryptedMessageLength, &blockLength, message, static_cast<int>(messageLength))) {
     return FAILURE;
   }
   encryptedMessageLength += blockLength;
 
-  return (int)encryptedMessageLength;
+  if(!EVP_SealFinal(rsaEncryptContext, *encryptedMessage + encryptedMessageLength, reinterpret_cast<int*>(&blockLength))) {
+    return FAILURE;
+  }
+  encryptedMessageLength += blockLength;
+
+  return static_cast<int>(encryptedMessageLength);
 }
 
 int Crypto::rsaDecrypt(unsigned char *encryptedMessage, size_t encryptedMessageLength, unsigned char *encryptedKey,
@@ -177,8 +184,8 @@ int Crypto::rsaDecrypt(unsigned char *encryptedMessage, size_t encryptedMessageL
   size_t decryptedMessageLength = 0;
   size_t blockLength = 0;
 
-  *decryptedMessage = (unsigned char*)malloc(encryptedMessageLength + ivLength);
-  if(*decryptedMessage == NULL) {
+  *decryptedMessage = static_cast<unsigned char*>(std::malloc(encryptedMessageLength + ivLength));
+  if(*decryptedMessage == nullptr) {
     return FAILURE;
   }
 
@@ -193,17 +200,17 @@ int Crypto::rsaDecrypt(unsigned char *encryptedMessage, size_t encryptedMessageL
     return FAILURE;
   }
 
-  if(!EVP_OpenUpdate(rsaDecryptContext, (unsigned char*)*decryptedMessage + decryptedMessageLength, (int*)&blockLength, encryptedMessage, (int)encryptedMessageLength)) {
+  if(!EVP_OpenUpdate(rsaDecryptContext, (unsigned char*)*decryptedMessage + decryptedMessageLength, reinterpret_cast<int*>(&blockLength), encryptedMessage, static_cast<int>(encryptedMessageLength))) {
     return FAILURE;
   }
   decryptedMessageLength += blockLength;
 
-  if(!EVP_OpenFinal(rsaDecryptContext, (unsigned char*)*decryptedMessage + decryptedMessageLength, (int*)&blockLength)) {
+  if(!EVP_OpenFinal(rsaDecryptContext, (unsigned char*)*decryptedMessage + decryptedMessageLength, reinterpret_cast<int*>(&blockLength))) {
     return FAILURE;
   }
   decryptedMessageLength += blockLength;
 
-  return (int)decryptedMessageLength;
+  return static_cast<int>(decryptedMessageLength);
 }
 
 int Crypto::aesEncrypt(const unsigned char *message, size_t messageLength, unsigned char **encryptedMessage) {
@@ -211,22 +218,22 @@ int Crypto::aesEncrypt(const unsigned char *message, size_t messageLength, unsig
   size_t blockLength = 0;
   size_t encryptedMessageLength = 0;
 
-  *encryptedMessage = (unsigned char*)malloc(messageLength + AES_BLOCK_SIZE);
-  if(encryptedMessage == NULL) {
+  *encryptedMessage = static_cast<unsigned char*>(std::malloc(messageLength + AES_BLOCK_SIZE));
+  if(*encryptedMessage == nullptr) {
     return FAILURE;
   }
 
   // Encrypt it!
-  if(!EVP_EncryptInit_ex(aesEncryptContext, EVP_aes_256_cbc(), NULL, aesKey, aesIv)) {
+  if(!EVP_EncryptInit_ex(aesEncryptContext, EVP_aes_256_cbc(), nullptr, aesKey, aesIv)) {
     return FAILURE;
   }
 
-  if(!EVP_EncryptUpdate(aesEncryptContext, *encryptedMessage, (int*)&blockLength, (unsigned char*)message, messageLength)) {
+  if(!EVP_EncryptUpdate(aesEncryptContext, *encryptedMessage, reinterpret_cast<int*>(&blockLength), (unsigned char*)message, messageLength)) {
     return FAILURE;
   }
   encryptedMessageLength += blockLength;
 
-  if(!EVP_EncryptFinal_ex(aesEncryptContext, *encryptedMessage + encryptedMessageLength, (int*)&blockLength)) {
+  if(!EVP_EncryptFinal_ex(aesEncryptContext, *encryptedMessage + encryptedMessageLength, reinterpret_cast<int*>(&blockLength))) {
     return FAILURE;
   }
 
@@ -238,27 +245,27 @@ int Crypto::aesDecrypt(unsigned char *encryptedMessage, size_t encryptedMessageL
   size_t decryptedMessageLength = 0;
   size_t blockLength = 0;
 
-  *decryptedMessage = (unsigned char*)malloc(encryptedMessageLength);
-  if(*decryptedMessage == NULL) {
+  *decryptedMessage = static_cast<unsigned char*>(std::malloc(encryptedMessageLength));
+  if(*decryptedMessage == nullptr) {
     return FAILURE;
   }
 
   // Decrypt it!
-  if(!EVP_DecryptInit_ex(aesDecryptContext, EVP_aes_256_cbc(), NULL, aesKey, aesIv)) {
+  if(!EVP_DecryptInit_ex(aesDecryptContext, EVP_aes_256_cbc(), nullptr, aesKey, aesIv)) {
     return FAILURE;
   }
 
-  if(!EVP_DecryptUpdate(aesDecryptContext, (unsigned char*)*decryptedMessage, (int*)&blockLength, encryptedMessage, (int)encryptedMessageLength)) {
-    return FAILURE;
-  }
-  decryptedMessageLength += blockLength;
-
-  if(!EVP_DecryptFinal_ex(aesDecryptContext, (unsigned char*)*decryptedMessage + decryptedMessageLength, (int*)&blockLength)) {
+  if(!EVP_DecryptUpdate(aesDecryptContext, (unsigned char*)*decryptedMessage, reinterpret_cast<int*>(&blockLength), encryptedMessage, static_cast<int>(encryptedMessageLength))) {
     return FAILURE;
   }
   decryptedMessageLength += blockLength;
 
-  return (int)decryptedMessageLength;
+  if(!EVP_DecryptFinal_ex(aesDecryptContext, (unsigned char*)*decryptedMessage + decryptedMessageLength, reinterpret_cast<int*>(&blockLength))) {
+    return FAILURE;
+  }
+  decryptedMessageLength += blockLength;
+
+  return static_cast<int>(decryptedMessageLength);
 }
 
 int Crypto::getRemotePublicKey(unsigned char **publicKey) {
@@ -270,11 +277,11 @@ int Crypto::getRemotePublicKey(unsigned char **publicKey) {
 int Crypto::setRemotePublicKey(unsigned char *publicKey, size_t publicKeyLength) {
   BIO *bio = BIO_new(BIO_s_mem());
 
-  if(BIO_write(bio, publicKey, publicKeyLength) != (int)publicKeyLength) {
+  if(BIO_write(bio, publicKey, publicKeyLength) != static_cast<int>(publicKeyLength)) {
     return FAILURE;
   }
 
-  PEM_read_bio_PUBKEY(bio, &remotePublicKey, NULL, NULL);
+  PEM_read_bio_PUBKEY(bio, &remotePublicKey, nullptr, nullptr);
   BIO_free_all(bio);
 
   return SUCCESS;
@@ -288,7 +295,7 @@ int Crypto::getLocalPublicKey(unsigned char **publicKey) {
 
 int Crypto::getLocalPrivateKey(unsigned char **privateKey) {
   BIO *bio = BIO_new(BIO_s_mem());
-  PEM_write_bio_PrivateKey(bio, localKeypair, NULL, NULL, 0, 0, NULL);
+  PEM_write_bio_PrivateKey(bio, localKeypair, nullptr, nullptr, 0, 0, nullptr);
   return bioToString(bio, privateKey);
 }
 
@@ -327,7 +334,7 @@ int Crypto::setAesIv(unsigned char *aesIv, size_t aesIvLengthgth) {
 int Crypto::writeKeyToFile(FILE *file, int key) {
   switch(key) {
     case KEY_SERVER_PRI:
-      if(!PEM_write_PrivateKey(file, localKeypair, NULL, NULL, 0, 0, NULL)) {
+      if(!PEM_write_PrivateKey(file, localKeypair, nullptr, nullptr, 0, 0, nullptr)) {
         return FAILURE;
       }
       break;
@@ -361,9 +368,9 @@ int Crypto::writeKeyToFile(FILE *file, int key) {
 
 int Crypto::bioToString(BIO *bio, unsigned char **string) {
   size_t bioLength = BIO_pending(bio);
-  *string = (unsigned char*)malloc(bioLength + 1);
+  *string = static_cast<unsigned char*>(std::malloc(bioLength + 1));
 
-  if(string == NULL) {
+  if(*string == nullptr) {
     return FAILURE;
   }
 
@@ -374,5 +381,5 @@ int Crypto::bioToString(BIO *bio, unsigned char **string) {
 
   BIO_free_all(bio);
 
-  return (int)bioLength;
+  return static_cast<int>(bioLength);
 }
