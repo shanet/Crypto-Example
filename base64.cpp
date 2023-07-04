@@ -2,9 +2,9 @@
 
 char* base64Encode(const unsigned char *message, const size_t length) {
   int encodedSize = 4 * ceil((double)length / 3);
-  char *b64text = (char*)malloc(encodedSize + 1);
+  char *encodedMessage = (char*)malloc(encodedSize + 1);
 
-  if(b64text == NULL) {
+  if(encodedMessage == NULL) {
     fprintf(stderr, "Failed to allocate memory\n");
     exit(1);
   }
@@ -21,44 +21,46 @@ char* base64Encode(const unsigned char *message, const size_t length) {
   BIO_get_mem_ptr(bio, &bufferPtr);
   BIO_set_close(bio, BIO_CLOSE);
 
-  memcpy(b64text, (*bufferPtr).data, (*bufferPtr).length + 1);
-  b64text[(*bufferPtr).length] = '\0';
+  // Add a NUL terminator
+  memcpy(encodedMessage, (*bufferPtr).data, (*bufferPtr).length + 1);
+  encodedMessage[(*bufferPtr).length] = '\0';
 
   BIO_free_all(bio);
-  return b64text;
+  return encodedMessage;
 }
 
-int base64Decode(const char *b64message, const size_t length, unsigned char **buffer) {
-  int decodedLength = calcDecodeLength(b64message, length);
-  *buffer = (unsigned char*)malloc(decodedLength + 1);
+int base64Decode(const char *encodedMessage, const size_t encodedMessageLength, unsigned char **decodedMessage) {
+  int decodedLength = calculateDecodedLength(encodedMessage, encodedMessageLength);
+  *decodedMessage = (unsigned char*)malloc(decodedLength + 1);
 
-  if(*buffer == NULL) {
+  if(*decodedMessage == NULL) {
     fprintf(stderr, "Failed to allocate memory\n");
     exit(1);
   }
 
-  BIO *bio = BIO_new_mem_buf(b64message, -1);
+  BIO *bio = BIO_new_mem_buf(encodedMessage, encodedMessageLength);
   BIO *b64 = BIO_new(BIO_f_base64());
   bio = BIO_push(b64, bio);
   BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
 
-  decodedLength = BIO_read(bio, *buffer, strlen(b64message));
-  (*buffer)[decodedLength] = '\0';
+  // Add a NUL terminator
+  decodedLength = BIO_read(bio, *decodedMessage, encodedMessageLength);
+  (*decodedMessage)[decodedLength] = '\0';
 
   BIO_free_all(bio);
 
   return decodedLength;
 }
 
-int calcDecodeLength(const char *b64input, const size_t length) {
+int calculateDecodedLength(const char *encodedMessage, const size_t encodedMessageLength) {
   unsigned int padding = 0;
 
   // Check for trailing '=''s as padding
-  if(b64input[length - 1] == '=' && b64input[length - 2] == '=') {
+  if(encodedMessage[encodedMessageLength - 1] == '=' && encodedMessage[encodedMessageLength - 2] == '=') {
     padding = 2;
-  } else if (b64input[length - 1] == '=') {
+  } else if (encodedMessage[encodedMessageLength - 1] == '=') {
     padding = 1;
   }
 
-  return (int)length * 0.75 - padding;
+  return (int)encodedMessageLength * 0.75 - padding;
 }

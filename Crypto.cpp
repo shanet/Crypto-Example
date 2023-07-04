@@ -1,4 +1,5 @@
 #include "Crypto.h"
+#include <iostream>
 
 using namespace std;
 
@@ -24,6 +25,7 @@ Crypto::Crypto(unsigned char *remotePublicKey, size_t remotePublicKeyLength) {
 }
 
 Crypto::~Crypto() {
+  EVP_PKEY_free(localKeypair);
   EVP_PKEY_free(remotePublicKey);
 
   EVP_CIPHER_CTX_free(rsaEncryptContext);

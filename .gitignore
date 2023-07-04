@@ -1,6 +1,9 @@
 crypto_example
 crypto_file_example
 
+lorem_ipsum.txt.dec
+lorem_ipsum.txt.enc
+
 # Compiled Object files
 *.slo
 *.lo

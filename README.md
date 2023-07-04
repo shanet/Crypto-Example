@@ -7,14 +7,23 @@ A short, proof-of-concept RSA and AES encryption program with OpenSSL.
 
 Accompanying documentation and walk-through is available at: https://shanetully.com/2012/06/openssl-rsa-aes-and-c/
 
+This example builds two binaries:
+
+1. `crypto_example` reads from stdin and encrypts/decrypts strings in RSA & AES.
+2. `crypto_file_example` takes a file as an argument, encrypts it with AES, writes it to a file base64 encoded, reads it back, decrypts it, and writes the decrypted file out.
+
 ## Usage
+
+### Prerequisites
 
 You must have a recent version of OpenSSL installed before building.
 
+### Compiling & Running
+
 ```
 $ make
-$ ./crypto_example
-$ ./crypto_file_example sample.txt
+$ make exec      # Runs the `crypto_example` binary
+$ make file_exec # Runs the `crypto_file_example` binary on a lorem ipsum text file
 ```
 
 ## Problems?

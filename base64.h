@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include <string.h>
 
-char* base64Encode(const unsigned char *buffer, const size_t length);
-int base64Decode(const char *b64message, const size_t length, unsigned char **buffer);
-int calcDecodeLength(const char *b64input, const size_t length);
+char* base64Encode(const unsigned char *message, const size_t length);
+int base64Decode(const char *encodedMessage, const size_t encodedMessageLength, unsigned char **decodedMessage);
+int calculateDecodedLength(const char *b64input, const size_t length);
 
 #endif

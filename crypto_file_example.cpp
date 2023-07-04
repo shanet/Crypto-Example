@@ -2,98 +2,86 @@
 
 // Note: This isn't a good way to encrypt large file (anything that can't be read into
 // memory in a single buffer). A better approach for this is to read in one block at a type,
-// encrypt it, write it to a file and so on.
+// encrypt it, write it to a file, and so on.
 
 int main(int argc, char **argv) {
   if(argc != 2) {
-    fprintf(stderr, "No file argument supplied.\n");
+    fprintf(stderr, "Invalid number of arguments given.\nUsage: %s [input file]\n", argv[0]);
     return 1;
   }
 
   Crypto crypto;
 
-  char *encryptedFilename = encryptFile(&crypto, argv[1]);
-  decryptFile(&crypto, argv[1], encryptedFilename);
+  char *encryptedOutput = appendToString(argv[1], (char*)".enc");
+  char *decryptedOutput = appendToString(argv[1], (char*)".dec");
+
+  encryptFile(&crypto, argv[1], encryptedOutput);
+  decryptFile(&crypto, encryptedOutput, decryptedOutput);
+
+  free(encryptedOutput);
+  free(decryptedOutput);
 
   return 0;
 }
 
-char* encryptFile(Crypto *crypto, char *filename) {
+void encryptFile(Crypto *crypto, char *input, char *output) {
   // Read the file to encrypt
-  unsigned char *file;
-  size_t fileLength = readFile(filename, &file);
-  printf("%d bytes to be encrypted\n", (int)fileLength);
+  unsigned char *plaintext;
+  size_t plainTextLength = readFile(input, &plaintext);
+  printf("%d bytes to be encrypted\n", (int)plainTextLength);
 
   // Encrypt the file
-  unsigned char *encryptedFile;
-  int encryptedFileLength = crypto->aesEncrypt((const unsigned char*)file, fileLength, &encryptedFile);
+  unsigned char *ciphertext;
+  int ciphertextLength = crypto->aesEncrypt((const unsigned char*)plaintext, plainTextLength, &ciphertext);
 
-  if(encryptedFileLength == -1) {
+  if(ciphertextLength == -1) {
     fprintf(stderr, "Encryption failed\n");
     exit(1);
   }
-  printf("%d bytes encrypted\n", encryptedFileLength);
+  printf("%d bytes encrypted\n", ciphertextLength);
 
-  // Append .enc to the filename
-  char *encryptedFilename = appendToString(filename, (char*)".enc");
-
-  #ifdef CONVERT_TO_BASE64
-    // Encode the encrypted file to base64
-    char *base64Buffer = base64Encode(encryptedFile, encryptedFileLength);
-
-    // Change the encrypted file pointer to the base64 string and update the length
-    free(encryptedFile);
-    encryptedFile = (unsigned char*)base64Buffer;
-    encryptedFileLength = strlen((char*)encryptedFile);
-  #endif
+  // Encode the encrypted file to base64
+  char *base64Ciphertext = base64Encode(ciphertext, ciphertextLength);
 
   // Write the encrypted file to its own file
-  writeFile(encryptedFilename, encryptedFile, encryptedFileLength);
-  printf("Encrypted file written to \"%s\"\n", encryptedFilename);
+  writeFile(output, (unsigned char*)base64Ciphertext, strlen((char*)base64Ciphertext));
+  printf("Encrypted file written to \"%s\"\n", output);
 
-  free(file);
-  return encryptedFilename;
+  free(plaintext);
+  free(ciphertext);
+  free(base64Ciphertext);
 }
 
-void decryptFile(Crypto *crypto, char *filename, char *encryptedFilename) {
+void decryptFile(Crypto *crypto, char *input, char *output) {
   // Read the encrypted file back
-  unsigned char *file;
-  size_t fileLength = readFile(encryptedFilename, &file);
+  unsigned char *base64Ciphertext;
+  size_t base64CiphertextLength = readFile(input, &base64Ciphertext);
 
-  #ifdef CONVERT_TO_BASE64
-    // Decode the encrypted file from base64
-    unsigned char *binaryBuffer;
-    fileLength = base64Decode((char*)file, fileLength, &binaryBuffer);
-
-    // Change the pointer of the string containing the file info to the decoded base64 string
-    free(file);
-    file = binaryBuffer;
-  #endif
+  // Decode the encrypted file from base64
+  unsigned char *ciphertext;
+  size_t ciphertextLength = base64Decode((char*)base64Ciphertext, base64CiphertextLength, &ciphertext);
 
   // Decrypt the encrypted file
-  unsigned char *decryptedFile;
-  int decryptedFileLength = crypto->aesDecrypt(file, fileLength, &decryptedFile);
+  unsigned char *plaintext;
+  int plaintextLength = crypto->aesDecrypt(ciphertext, ciphertextLength, &plaintext);
 
-  if(decryptedFileLength == -1) {
+  if(plaintextLength == -1) {
     fprintf(stderr, "Decryption failed\n");
     exit(1);
   }
-  printf("%d bytes decrypted\n", (int)decryptedFileLength);
-
-  // Append .dec to the filename
-  char *decryptedFilename = appendToString(filename, (char*)".dec");
+  printf("%d bytes decrypted\n", (int)plaintextLength);
 
   // Write the decrypted file to its own file
-  writeFile(decryptedFilename, decryptedFile, decryptedFileLength);
-  printf("Decrypted file written to \"%s\"\n", decryptedFilename);
+  writeFile(output, plaintext, plaintextLength);
+  printf("Decrypted file written to \"%s\"\n", output);
 
-  free(decryptedFile);
-  free(decryptedFilename);
-  free(file);
+  free(base64Ciphertext);
+  free(ciphertext);
+  free(plaintext);
 }
 
 void writeFile(char *filename, unsigned char *file, size_t fileLength) {
-  FILE *fd = fopen(filename, "wb");
+  FILE *fd = fopen(filename, "w");
   if(fd == NULL) {
     fprintf(stderr, "Failed to open file: %s\n", strerror(errno));
     exit(1);
@@ -110,7 +98,7 @@ void writeFile(char *filename, unsigned char *file, size_t fileLength) {
 }
 
 int readFile(char *filename, unsigned char **file) {
-  FILE *fd = fopen(filename, "rb");
+  FILE *fd = fopen(filename, "r");
   if(fd == NULL) {
     fprintf(stderr, "Failed to open file: %s\n", strerror(errno));
     exit(1);

@@ -23,13 +23,13 @@ void encryptRsa(Crypto *crypto) {
   string message = getMessage("Message to RSA encrypt: ");
 
   // Encrypt the message with RSA
-  // +1 on the string length argument because we want to encrypt the NUL terminator too
   unsigned char *encryptedMessage = NULL;
   unsigned char *encryptedKey;
   unsigned char *iv;
   size_t encryptedKeyLength;
   size_t ivLength;
 
+  // +1 on the string length argument because we want to encrypt the NUL terminator too
   int encryptedMessageLength = crypto->rsaEncrypt((const unsigned char*)message.c_str(), message.size()+1,
     &encryptedMessage, &encryptedKey, &encryptedKeyLength, &iv, &ivLength);
 
@@ -61,12 +61,6 @@ void encryptRsa(Crypto *crypto) {
   free(encryptedKey);
   free(iv);
   free(b64Message);
-
-  encryptedMessage = NULL;
-  decryptedMessage = NULL;
-  encryptedKey = NULL;
-  iv = NULL;
-  b64Message = NULL;
 }
 
 void encryptAes(Crypto *crypto) {
@@ -101,10 +95,6 @@ void encryptAes(Crypto *crypto) {
   free(encryptedMessage);
   free(decryptedMessage);
   free(b64Message);
-
-  encryptedMessage = NULL;
-  decryptedMessage = NULL;
-  b64Message = NULL;
 }
 
 string getMessage(const char *prompt) {

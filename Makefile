@@ -16,8 +16,11 @@ text:
 file:
 	$(CC) $(CFLAGS) -o $(FILE_EXAMPLE_TARGET) $(SRC) crypto_file_example.cpp $(LIBS)
 
-test:
+exec:
 	./$(EXAMPLE_TARGET)
+
+file_exec:
+	./$(FILE_EXAMPLE_TARGET) lorem_ipsum.txt
 
 clean:
 	rm $(EXAMPLE_TARGET) $(FILE_EXAMPLE_TARGET)
