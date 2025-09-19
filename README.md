@@ -1,11 +1,11 @@
 Crypto-Example
 ==============
 
-#### shane tully (shanetully.com)
+#### kira tully (ephemeral.cx)
 
 A short, proof-of-concept RSA and AES encryption program with OpenSSL.
 
-Accompanying documentation and walk-through is available at: https://shanetully.com/2012/06/openssl-rsa-aes-and-c/
+Accompanying documentation and walk-through is available at [https://ephemeral.cx/2012/06/openssl-rsa-aes-and-c](https://ephemeral.cx/2012/06/openssl-rsa-aes-and-c)
 
 This example builds two binaries:
 
@@ -34,7 +34,7 @@ Despite going long periods of time without being updated, this repo is actively 
 
 The MIT License (MIT)
 
-Copyright (c) 2013 Shane Tully
+Copyright (c) 2013 Kira Tully
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
